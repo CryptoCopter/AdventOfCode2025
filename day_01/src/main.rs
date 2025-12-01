@@ -1,7 +1,7 @@
+use std::env;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::env;
 
 fn main() {
     let filename = env::args().nth(1).expect("Need filename");
@@ -14,7 +14,9 @@ fn main() {
 }
 
 fn read_input<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
 }
@@ -34,22 +36,22 @@ fn solve(input: io::Lines<io::BufReader<File>>) -> (u16, u16) {
         }
 
         let old_dial = dial;
-        dial = dial + steps;
+        dial += steps;
         if dial > 99 {
             sweeps = (dial / 100) as u16;
         }
         if dial < 1 {
-            sweeps = (dial / 100).abs() as u16;
+            sweeps = (dial / 100).unsigned_abs();
             if old_dial != 0 {
                 sweeps += 1;
             }
         }
         driveby += sweeps;
 
-        dial = dial % 100;
+        dial %= 100;
 
         if dial < 0 {
-            dial = dial + 100;
+            dial += 100;
         }
 
         if dial == 0 {
