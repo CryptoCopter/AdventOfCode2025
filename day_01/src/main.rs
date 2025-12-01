@@ -58,3 +58,22 @@ fn solve(input: io::Lines<io::BufReader<File>>) -> (u16, u16) {
     }
     (hits, driveby)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_1() {
+        let input = read_input("./example.txt").unwrap();
+        let (part_1, _) = solve(input);
+        assert_eq!(part_1, 3);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let input = read_input("./example.txt").unwrap();
+        let (_, part_2) = solve(input);
+        assert_eq!(part_2, 6);
+    }
+}
