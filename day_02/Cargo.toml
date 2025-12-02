@@ -9,3 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 fancy-regex = "0.16.2"
+num_cpus = "1.0"
