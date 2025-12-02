@@ -33,18 +33,23 @@ where
 
 fn solve(input: Vec<(u64, u64)>) -> (u64, u64) {
     let regex_1 = Regex::new(r"^(.*)\1$").unwrap();
-    let mut sum: u64 = 0;
+    let regex_2 = Regex::new(r"^(.*)\1+$").unwrap();
+    let mut sum_1: u64 = 0;
+    let mut sum_2: u64 = 0;
 
     for (start, stop) in input {
         for n in start..stop + 1 {
             let n_str = n.to_string();
             if regex_1.is_match(&n_str).unwrap() {
-                sum += n;
+                sum_1 += n;
+            }
+            if regex_2.is_match(&n_str).unwrap() {
+                sum_2 += n;
             }
         }
     }
 
-    (sum, 0)
+    (sum_1, sum_2)
 }
 
 #[cfg(test)]
@@ -62,20 +67,22 @@ mod tests {
     fn test_part_2_example() {
         let input = read_input("./example.txt");
         let (_, part_2) = solve(input);
-        assert_eq!(part_2, 6);
+        assert_eq!(part_2, 4174379265);
     }
 
+    // this is for my personal puzzle input, yours will bit different
     #[test]
     fn test_part_1_real() {
         let input = read_input("./input.txt");
         let (part_1, _) = solve(input);
-        assert_eq!(part_1, 1227775554);
+        assert_eq!(part_1, 17077011375);
     }
 
+    // this is for my personal puzzle input, yours will bit different
     #[test]
     fn test_part_2_real() {
         let input = read_input("./input.txt");
         let (_, part_2) = solve(input);
-        assert_eq!(part_2, 6);
+        assert_eq!(part_2, 36037497037);
     }
 }
