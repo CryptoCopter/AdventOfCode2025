@@ -1,19 +1,25 @@
-use std::cmp::{max, min};
+use std::cmp::{Ordering, max, min};
 use std::env;
 use std::fmt;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Range {
     start: u64,
     stop: u64,
 }
 
 impl Range {
-    fn check(&self, item: u64) -> bool {
-        self.start <= item && item <= self.stop
+    fn cmp(&self, item: u64) -> Ordering {
+        if self.start > item {
+            return Ordering::Greater;
+        }
+        if self.stop < item {
+            return Ordering::Less;
+        }
+        Ordering::Equal
     }
 
     fn merge(&self, other: &Range) -> Option<Range> {
@@ -83,11 +89,11 @@ fn solve(input: ParsedInput) -> (u32, u64) {
 
     // part 1
     for item in items.iter() {
-        for range in merged_ranges.iter() {
-            if range.check(*item) {
-                part_1 += 1;
-                break;
-            }
+        if merged_ranges
+            .binary_search_by(|range| range.cmp(*item))
+            .is_ok()
+        {
+            part_1 += 1;
         }
     }
 
@@ -101,7 +107,7 @@ fn solve(input: ParsedInput) -> (u32, u64) {
 
 fn merge_ranges(ranges: Vec<Range>) -> Vec<Range> {
     let mut merged_ranges = ranges.to_vec();
-    merged_ranges.sort_by_key(|r| r.start);
+    merged_ranges.sort_unstable();
 
     let mut index: usize = 0;
     while index < merged_ranges.len() - 1 {
@@ -112,7 +118,12 @@ fn merge_ranges(ranges: Vec<Range>) -> Vec<Range> {
             merge_happened = false;
 
             for j in index + 1..merged_ranges.len() {
-                let merge = range.merge(&merged_ranges[j]);
+                let other = merged_ranges[j];
+                if other.start > range.stop {
+                    break;
+                }
+
+                let merge = range.merge(&other);
                 if let Some(merged) = merge {
                     range = merged;
                     merged_ranges[index] = merged;
