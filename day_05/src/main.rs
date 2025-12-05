@@ -74,13 +74,14 @@ where
     (fresh, ingredients)
 }
 
-fn solve(input: ParsedInput) -> (u32, u32) {
+fn solve(input: ParsedInput) -> (u32, u64) {
     let mut part_1: u32 = 0;
-    let part_2: u32 = 0;
+    let mut part_2: u64 = 0;
 
     let (ranges, items) = input;
     let merged_ranges = merge_ranges(ranges);
 
+    // part 1
     for item in items.iter() {
         for range in merged_ranges.iter() {
             if range.check(*item) {
@@ -88,6 +89,11 @@ fn solve(input: ParsedInput) -> (u32, u32) {
                 break;
             }
         }
+    }
+
+    // part 2
+    for range in merged_ranges.iter() {
+        part_2 += (range.stop - range.start) + 1;
     }
 
     (part_1, part_2)
@@ -138,7 +144,7 @@ mod tests {
     fn test_part_2_example() {
         let input = read_input("./example.txt");
         let (_, part_2) = solve(input);
-        assert_eq!(part_2, 0);
+        assert_eq!(part_2, 14);
     }
 
     // this is for my personal puzzle input, yours will bit different
@@ -154,6 +160,6 @@ mod tests {
     fn test_part_2_real() {
         let input = read_input("./input.txt");
         let (_, part_2) = solve(input);
-        assert_eq!(part_2, 0);
+        assert_eq!(part_2, 357674099117260);
     }
 }
