@@ -11,6 +11,9 @@ struct Device {
 
 struct Graph {
     root: usize,
+    svr: usize,
+    fft: usize,
+    dac: usize,
     devices: Vec<Device>,
     name_map: HashMap<String, usize>,
 }
@@ -19,6 +22,9 @@ impl Graph {
     fn new() -> Graph {
         let mut graph = Graph {
             root: 0,
+            svr: 0,
+            fft: 0,
+            dac: 0,
             devices: vec![Device {
                 name: "out".to_string(),
                 outputs: Vec::new(),
@@ -38,6 +44,15 @@ impl Graph {
         if name == "you" {
             self.root = index;
         }
+        if name == "svr" {
+            self.svr = index;
+        }
+        if name == "fft" {
+            self.fft = index;
+        }
+        if name == "dac" {
+            self.dac = index;
+        }
 
         self.name_map.insert(name, index);
         self.devices.push(device);
@@ -45,26 +60,43 @@ impl Graph {
 
     fn walk(&self) -> u64 {
         let mut cache: HashMap<String, u64> = HashMap::with_capacity(self.devices.len());
-        self._walk(&self.devices[self.root], &mut cache)
+        self._walk(&self.devices[self.root], "out", &mut cache)
     }
 
-    fn _walk(&self, device: &Device, cache: &mut HashMap<String, u64>) -> u64 {
+    fn _walk(&self, device: &Device, goal: &str, cache: &mut HashMap<String, u64>) -> u64 {
         if let Some(cached) = cache.get(&device.name) {
             return *cached;
         }
 
-        if device.name == "out" {
+        if device.name == goal {
             return 1;
         }
 
         let mut sum: u64 = 0;
 
         for output in &device.outputs {
-            sum += self._walk(&self.devices[*self.name_map.get(output).unwrap()], cache)
+            sum += self._walk(
+                &self.devices[*self.name_map.get(output).unwrap()],
+                goal,
+                cache,
+            )
         }
 
         cache.insert(device.name.clone(), sum);
         sum
+    }
+
+    fn paths_through(&self) -> u64 {
+        let mut cache: HashMap<String, u64> = HashMap::with_capacity(self.devices.len());
+        let paths_fft = self._walk(&self.devices[self.svr], "fft", &mut cache);
+
+        cache = HashMap::with_capacity(self.devices.len());
+        let paths_dac = self._walk(&self.devices[self.fft], "dac", &mut cache);
+
+        cache = HashMap::with_capacity(self.devices.len());
+        let paths_out = self._walk(&self.devices[self.dac], "out", &mut cache);
+
+        paths_fft * paths_dac * paths_out
     }
 }
 
@@ -89,7 +121,7 @@ where
 }
 
 fn solve(graph: Graph) -> (u64, u64) {
-    (graph.walk(), 0)
+    (graph.walk(), graph.paths_through())
 }
 
 fn main() {
@@ -112,9 +144,9 @@ mod tests {
 
     #[test]
     fn test_part_2_example() {
-        let input = read_input("./example.txt");
+        let input = read_input("./example_2.txt");
         let (_, part_2) = solve(input);
-        assert_eq!(part_2, 0);
+        assert_eq!(part_2, 2);
     }
 
     // this is for my personal puzzle input, yours will bit different
@@ -130,6 +162,6 @@ mod tests {
     fn test_part_2_real() {
         let input = read_input("./input.txt");
         let (_, part_2) = solve(input);
-        assert_eq!(part_2, 0);
+        assert_eq!(part_2, 479511112939968);
     }
 }
